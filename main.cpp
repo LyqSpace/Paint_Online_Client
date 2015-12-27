@@ -30,7 +30,7 @@ Scalar brushColor;
 int mouseState;
 Point lastP;
 Mat myBoard;
-const char *windowName = "Paint Board";
+char windowName[100] = "Paint Board";
 
 void error(const char *msg)
 {
@@ -70,7 +70,7 @@ void* recv_thread(void*) {
 		}
 		Point p0, p1;
 		Scalar c;
-		int thick;
+		int thick = -1;
 		char *params = strtok(msg, " ");
 		p0.x = atoi(params);
 		params = strtok(NULL, " ");
@@ -86,6 +86,7 @@ void* recv_thread(void*) {
 		}
 		thick = atoi(params);
 
+		if (thick <= 0 || thick > 10 || c.val[0] < 0 || c.val[0] > 255 ) continue;
 		line(myBoard, p0, p1, c, thick);
 		imshow(windowName, myBoard);
 	}
@@ -203,9 +204,10 @@ void onMouse(int event, int x, int y, int, void*) {
 	}
 }
 
-void setup_board() {
+void setup_board(const char *userName) {
 
-
+	strcat(windowName, " - ");
+	strcat(windowName, userName);
 	namedWindow(windowName);
 
 	const char *trackbarName = "Brush Color : ";
@@ -233,7 +235,7 @@ int main(int argc, char **argv) {
 	setup_socket();
 	setup_receiver();
 	send(server_socket, argv[1], sizeof(argv[1]), 0);
-	setup_board();
+	setup_board(argv[1]);
 
 
 
